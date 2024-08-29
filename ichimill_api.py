@@ -104,7 +104,7 @@ class IchimillAPI(object):
         return self.__send(Action.GET_DEVICE_LIST)
 
 
-    def realtime_tracking(self, device=None, callback_func=None):
+    def realtime_tracking(self, devices=[], callback_func=None):
         """ 測位データリアルタイム取得 """
         sio = socketio.Client(
             reconnection=True, 
@@ -124,7 +124,7 @@ class IchimillAPI(object):
             "api": Action.REALTIME_TRACKING.value,
             "id": self.access_id,
             "key": self.api_key,
-            "device": device,
+            "device": (",").join(devices),
         }
         try:
             sio.connect(f"{self.url}?{urllib.parse.urlencode(params)}", namespaces=["/"], transports="websocket", socketio_path="/v2/socket.io")
@@ -137,16 +137,18 @@ if __name__ == "__main__":
 
     ichimill = IchimillAPI()
     
-    #r = ichimill.get_traking_data(devices=["lc8034"], callback_url="https://323a-111-102-203-201.ngrok-free.app")
-    #logger.info(json.dumps(r, indent=4, ensure_ascii=False))
+    devices = ["lc8034"]
+    
+    # r = ichimill.get_traking_data(devices=devices, callback_url="https://323a-111-102-203-201.ngrok-free.app")
+    # logger.info(json.dumps(r, indent=4, ensure_ascii=False))
 
-    r = ichimill.request_data_download_file_URL(request_id=91763)
-    logger.info(json.dumps(r, indent=4, ensure_ascii=False))
+    # r = ichimill.request_data_download_file_URL(request_id=91763)
+    # logger.info(json.dumps(r, indent=4, ensure_ascii=False))
 
     # r = ichimill.get_device_list()
     # logger.info(json.dumps(r, indent=4, ensure_ascii=False))
 
-    # r = ichimill.send_command(devices=["lc8034"], command=Command.GETGPS, callback_url="https://323a-111-102-203-201.ngrok-free.app")
+    # r = ichimill.send_command(devices=devices, command=Command.GETGPS, callback_url="https://323a-111-102-203-201.ngrok-free.app")
     # logger.info(json.dumps(r, indent=4, ensure_ascii=False))
 
-    # ichimill.realtime_tracking(device="lc8034", callback_func=lambda x: logger.debug(x))
+    ichimill.realtime_tracking(devices=devices, callback_func=lambda x: logger.debug(x))
