@@ -2,3 +2,4 @@ python-socketio
 websocket-client
 python-dotenv
 loguru
+pydantic

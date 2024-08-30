@@ -1,0 +1,10 @@
+[project]
+version = "0.1"
+name = "ichimill-api"
+dependencies = [
+    "python-socketio",
+    "websocket-client",
+    "python-dotenv",
+    "loguru",
+    "pydantic",
+]
