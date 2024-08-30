@@ -6,7 +6,7 @@ import socketio
 import urllib
 from loguru import logger
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Any
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
 URL = "https://rtk.multignss-smarttracking.com/"
@@ -59,8 +59,8 @@ class TrackingDataRequest(RequestModel):
         return dt.strftime("%Y-%m-%d %H:%M:%S")
 
     @field_serializer("device")    
-    def serialize_device(self, device: List) -> str:
-        return (",").join(device)
+    def serialize_devices(self, devices: List) -> str:
+        return (",").join(devices)
 
 
 class RequestDataDownloadFileURLRequest(RequestModel):
@@ -71,24 +71,24 @@ class SendCommandRequest(RequestModel):
     model_config = ConfigDict(use_enum_values=True)    
     device: Optional[List[str]] = None
     command: Command = None
-    setValue: Optional[str] = None
-    callback: Optional[str] = None
+    set_value: Optional[Any] = None
+    callback: str = None
 
     @field_serializer("device")    
-    def serialize_device(self, device: List) -> str:
-        return (",").join(device)
+    def serialize_devices(self, devices: List) -> str:
+        return (",").join(devices)
 
 
 class ReatimeTrackingRequest(BaseModel):
     model_config = ConfigDict(use_enum_values=True)    
+    api: str = Action.REALTIME_TRACKING,
     id: str = Field(os.environ["ACCESS_ID"])
     key: str = Field(os.environ["API_KEY"])
-    api: str = Action.REALTIME_TRACKING,
     device: Optional[List[str]] = None
 
     @field_serializer("device")    
-    def serialize_device(self, device: List) -> str:
-        return (",").join(device)
+    def serialize_devices(self, devices: List) -> str:
+        return (",").join(devices)
 
 
 class Client(object):
@@ -139,7 +139,7 @@ class Client(object):
         req = SendCommandRequest(
            device=devices,
            command=command,
-           setValue=value,
+           set_value=value,
            callback=callback_url,
         )
         return self.__send(Action.SEND_COMMAND, req)
@@ -167,7 +167,7 @@ class Client(object):
             # logger.debug(json.dumps(json_data, indent=2, ensure_ascii=False))
 
         req = ReatimeTrackingRequest(device=devices)
-        query = urllib.parse.urlencode((req.model_dump(exclude_none=True, by_alias=True)))
+        query = urllib.parse.urlencode((req.model_dump(exclude_none=True)))
         try:
             sio.connect(f"{self.url}?{query}", namespaces=["/"], transports="websocket", socketio_path="/v2/socket.io")
             sio.wait()
